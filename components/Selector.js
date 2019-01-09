@@ -2,12 +2,11 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 export default class Selector extends React.Component {
-
   constructor(props) {
     super(props);
   }
 
-  renderButton(number, index) {
+  renderButton({ number, index, label }) {
     const { buttonContainer, cellText } = styles;
     return (
       <TouchableOpacity 
@@ -15,25 +14,31 @@ export default class Selector extends React.Component {
         onPress={() => this.props.onPress(number)}
       >
         <View style={buttonContainer}>
-          <Text style={cellText}>{number}</Text>
+          <Text style={cellText}>{label}</Text>
         </View>
       </TouchableOpacity>
     );
   }
 
   render() {
-    const { selectorContainer } = styles;
+    const { selectorRow } = styles;
     return (
-    <View style={selectorContainer}>
-      {[...Array(9).keys()].map((number, index) => this.renderButton(++number, index))}
+    <View>
+      <View style={ selectorRow }>
+        {[...Array(4).keys()].map((number, index) => this.renderButton({ number: ++number, index, label: number }))}
+        {this.renderButton({ number: 0, index: 99, label: 'C' })}
+      </View>
+      <View style={ selectorRow }>
+        {[...Array(9).keys()].splice(4).map((number, index) => this.renderButton({ number: ++number, index, label: number }))}
+      </View>
     </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  selectorContainer: {
-    justifyContent: 'flex-start',
+  selectorRow: {
+    justifyContent: 'center',
     flexDirection: 'row',
     width: 40*9,
     height: 40,
@@ -45,8 +50,8 @@ const styles = StyleSheet.create({
     borderRadius: 2.5,
     borderWidth: 1.5,
     borderColor: '#c1d9ff',
-    width: 40,
-    height: 40,
+    width: 63,
+    height: 55,
     alignItems: 'center',
     justifyContent: 'center',
   },

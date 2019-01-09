@@ -26,12 +26,8 @@ export default class Board extends React.Component {
     });
   }
 
-  constructor(props) {
-    super(props);
-    const { width, height, level } = this.props;
-
-    // Create a grid and initialise with new objects
-    let grid = new Array(width * height).fill().map(
+  createGrid = (width, height) => {
+    return Array(width * height).fill().map(
       () => new Array(width * height).fill().map(
         () => new (function(){ 
           this.value = 0;
@@ -41,12 +37,39 @@ export default class Board extends React.Component {
           this.locked = false;
         })()
       )
-    );  
+    );
+  };
 
-    if (level)
+  reset({ width, height, level }) {    
+    let grid = new this.createGrid(width, height);
+    if (level) {
       this.readLevel({ level, grid });
+      this.checkErrors({ grid });
+    }
+    return { grid, selected: null };
+  }
 
-    this.state = { grid, selected: { row: 0, column: 0 } };
+  constructor(props) {
+    super(props);
+    const { width, height, level } = this.props;
+    this.state = this.reset({ width, height, level });
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { width, height, level } = nextProps;
+    this.setState(this.reset({ width, height, level }));
+  }
+  
+  countItems({ grid, prop, value }) {
+    return grid.reduce((total, currentRow, rowIdx) => {
+      return total += currentRow.reduce((colTotal, currentCell, cellIdx) => {
+        if (currentCell[prop] === value) {
+            return ++colTotal;
+        } else {
+          return colTotal;
+        }
+      }, 0);
+    }, 0);
   }
 
   // Return a reference to all elements in a subset of the grid
@@ -101,7 +124,7 @@ export default class Board extends React.Component {
     });
   }
 
-  // Check errors for columns, rows and nonets respectively
+  // Check for errors in columns, rows and nonets respectively
   checkErrors = ({ grid }) => {
     const { width, height } = this.props;
 
@@ -144,14 +167,17 @@ export default class Board extends React.Component {
     if (cell.locked && cell.duplicate) 
       return { backgroundColor: 'rgb(170, 90, 99)' }
     else if (cell.locked)
-      return { backgroundColor: '#aaa'  }
+      return { backgroundColor: '#ccc'  }
     else
       return {};
   };
 
   selectStyle = (rowIdx, colIdx) => {
     const { selected } = this.state;
-    return (selected.row === rowIdx && selected.column === colIdx) ?
+    return (
+      selected !== null &&
+      selected.row === rowIdx && 
+      selected.column === colIdx) ?
         { backgroundColor: '#fff247' } : {};
   };
   
@@ -245,11 +271,20 @@ export default class Board extends React.Component {
 
   selectorPressed = (selectedNumber) => {
     const { selected } = this.state;
-    let grid = _.cloneDeep(this.state.grid);
-    grid[selected.row][selected.column].value = selectedNumber;
-    this.clearErrors(grid);
-    this.checkErrors({ grid });
-    this.setState({ grid });
+    const { width, height } = this.props;
+
+    if (selected !== null) {
+      let grid = _.cloneDeep(this.state.grid);
+      grid[selected.row][selected.column].value = selectedNumber;
+      this.clearErrors(grid);
+      this.checkErrors({ grid });
+      
+      if (!this.countItems({ grid, prop: 'value', value: 0 })
+        && this.countItems({ grid, prop: 'error', value: 0 }) === Math.pow(width * height, 2))
+       this.props.onComplete()
+       
+      this.setState({ grid });
+    }
   }
 
   render() {
