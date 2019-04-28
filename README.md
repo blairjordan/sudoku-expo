@@ -8,7 +8,7 @@ A simple sudoku clone written in React Native.
 To preview this application using the Expo app, visit the following link:
 https://expo.io/@blairj/sudoku
 
-![](screenshot/iphone.jpg?raw=true)
+![](screenshots/iphone.jpg?raw=true)
 
 ## Install
 
