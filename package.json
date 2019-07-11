@@ -3,7 +3,7 @@
   "private": true,
   "dependencies": {
     "expo": "^31.0.4",
-    "lodash": "^4.17.5",
+    "lodash": "^4.17.13",
     "react": "16.5.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-31.0.1.tar.gz",
     "react-native-animatable": "^1.2.4"
